@@ -1,0 +1,202 @@
+---
+title: "Y1H"
+output: html_document
+---
+<h2>Purpose and data explanation</h2>
+
+
+
+The purpose of this is to create a simple way to turn the data of a Yeast one-hybrid experiment into easily understandable results. These results can be gotten from the manipulation of certain variables that will control the sensitivity of the data.
+
+Our data is broken up into promoters, as shown in the following figure. <https://goo.gl/2KVAPz>
+
+<h4>A and B do not signify order, just that they are different genes</h4>
+
+The promoters are labeled pIAAX - A, pIAAX - B, and, in some cases, pIAAX - C.
+
+A, B, and C denote a portion of a gene but doesn't necessarily indicate which segment of the gene - only that it is a different part.
+
+X is a number that denotes the bait ID number.
+
+
+---
+
+<h3>Key</h3>
+
+<table style="width:100%">
+  <tr>
+    Column             Column Name         Discription
+      A                 AGI                 TF gene ID number
+      B                 Family              gene family
+      C                 LUM                 Luminescence value
+      D                 OD600               Cell growth = the optical density at 600nm
+      E                 Cell.vol            volume of cells in mL, This data has all = .025
+      F                 Time                This data has time of reaction = 1
+    
+</table>
+
+<h3>Step 1: Formatting</h3>
+
+The first thing that I did was to format each Excel document to contain a single header and the following data:
+AGI, Family, Lum, OD600, cell vol, time
+
+
+I deleted the following information from the excel so that we can set them as variables throughout the rest of the R script:
+Bait ID, OD600 cutoff value, AVR LUM control, AVR-LUM_bkg, AVR-OD600_bkg, SD-OD600_bkg, AVR-LUM_ctrl, SD_LUM_ctrl, Fold_Ind_C.O., the number of High confidence interactions,
+
+I deleted the following columns:
+Plate-well, DNAarray, blank, Lum_bkg, Lum-bkg, bkg600, od600-b, well, AVRplate, AVRall, plate and all, control vs Control (per plate), and the conclusion.
+
+The final formatting in Excel looks like this <https://gyazo.com/e544915e58fe3c00894904cf4f9fbdea>
+
+Each Excel sheet was saved as a CSV file so that RStudio can import it.
+
+---
+<h3>Step 2: Importing Data set</h3>
+
+The following code will allow you to import and view the CSVs from your working directory as long as they are properly directed.
+
+It will also change any blank values within the Excel document to an NA value.
+
+It will also clean the data frame by removing any row that has an NA in it.
+
+However, I am coming across a problem that I have an extra column (column "x"). So I will have to manually drop that column.
+
+
+
+```{r}
+IAA1...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA1 - A.csv", na.strings = c("","NA"))
+IAA1...A$X <- NULL ##Drop the extra column
+Clean_IAA1...A <- na.omit(IAA1...A) #Removes any row with an NA value
+View(IAA1...A)
+```
+
+---
+
+<h3>Step 3: Removing Low Values</h3>
+
+
+The following code will create a subset of the imported data that is greater than or equal to the indicated variable, which removes the values that are lower than the indicated value.
+
+"growth" indicates the cutoff point where all other data will be excluded from calculations.
+
+"Refined_1A" is the new set of data that is greater than or equal to the growth variable. The reason I chose to name them XA or XB or XC is because we will start to have a large amount of these functions and it is good to name them an appropriate name before having 30 of them to sift through.
+
+The data set IAA1...A is our previously imported data set.
+
+OD600 is a header within the data set.
+
+
+```{r}
+
+growth <- .2 ##Change this to change the minimum value of OD600
+
+Refined_1A <- subset(Clean_IAA1...A, OD600 >= growth)
+
+
+```
+
+---
+
+<h3>Step 4: Analyzing Results</h3>
+
+After completing steps 1 through 3 on each set of data, I began to analyze the results.
+
+I wasn't exactly sure what to look at, but this is the basics of it.
+
+```{r}
+
+plot(Refined_1A$Lum,Refined_1A$OD600) ##This plots the Lum (x-axis) vs OD600 (y-axis)
+
+```
+---
+
+
+<h2>Questions</h2>
+
+
+<h4>Question 1</h4>
+So, I manually inputted each one in like so. I was wondering if it was possible to automate that process? It was very time consuming even when copying and pasting, I had to change IAA1...A to IAA1...B and so forth. I also had to change WD/IAA1 - A to WD/IAA1 - B. All in all, this was the longest part of the entire thing.
+
+Is it possible to automatically generate a funciton based on a pattern?
+
+```{r}
+
+IAA1...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA1 - A.csv", na.strings = c("","NA"))
+IAA1...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA1 - B.csv", na.strings = c("","NA"))
+IAA3...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA3 - A.csv", na.strings = c("","NA"))
+IAA3...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA3 - B.csv", na.strings = c("","NA"))
+IAA5...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA5 - A.csv", na.strings = c("","NA"))
+IAA5...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA5 - B.csv", na.strings = c("","NA"))
+IAA6...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA6 - A.csv", na.strings = c("","NA"))
+IAA6...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA6 - B.csv", na.strings = c("","NA"))
+IAA6...C <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA6 - C.csv", na.strings = c("","NA"))
+IAA7...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA7 - A.csv", na.strings = c("","NA"))
+IAA7...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA7 - B.csv", na.strings = c("","NA"))
+IAA9...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA9 - A.csv", na.strings = c("","NA"))
+IAA9...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA9 - B.csv", na.strings = c("","NA"))
+IAA10...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA10 - A.csv", na.strings = c("","NA"))
+IAA10...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA10 - B.csv", na.strings = c("","NA"))
+IAA12...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA12 - A.csv", na.strings = c("","NA"))
+IAA12...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA12 - B.csv", na.strings = c("","NA"))
+IAA14...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA14 - A.csv", na.strings = c("","NA"))
+IAA14...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA14 - B.csv", na.strings = c("","NA"))
+IAA15...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA15 - A.csv", na.strings = c("","NA"))
+IAA15...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA15 - B.csv", na.strings = c("","NA"))
+IAA17...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA17 - A.csv", na.strings = c("","NA"))
+IAA17...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA17 - B.csv", na.strings = c("","NA"))
+IAA26...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA26 - A.csv", na.strings = c("","NA"))
+IAA26...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA26 - B.csv", na.strings = c("","NA"))
+IAA30...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA30 - A.csv", na.strings = c("","NA"))
+IAA30...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA30 - B.csv", na.strings = c("","NA"))
+IAA33...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA33 - A.csv", na.strings = c("","NA"))
+IAA33...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA33 - B.csv", na.strings = c("","NA"))
+IAA34...A <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA34 - A.csv", na.strings = c("","NA"))
+IAA34...B <- read.csv("D:/Documents/College/Research/Y1H/Updated pIAA CSVs and WD/IAA34 - B.csv", na.strings = c("","NA"))
+
+```
+
+---
+<h4>Question 2</h4>
+
+Another automating question.
+
+When changing the variable "growth" is it possible to have the funcitons Refined_XA update? I have to paste them into the console to have them update, which is time consuming.
+
+```{r}
+
+growth <- .25 ##Change this to change the minimum value of OD600
+
+Refined_1A <- subset(Clean_IAA1...A, OD600 >= growth)
+Refined_1B <- subset(Clean_IAA1...B, OD600 >= growth)
+Refined_3A <- subset(Clean_IAA3...A, OD600 >= growth)
+Refined_3B <- subset(Clean_IAA3...B, OD600 >= growth)
+Refined_5A <- subset(Clean_IAA5...A, OD600 >= growth)
+Refined_5B <- subset(Clean_IAA5...B, OD600 >= growth)
+Refined_6A <- subset(Clean_IAA6...A, OD600 >= growth)
+Refined_6B <- subset(Clean_IAA6...B, OD600 >= growth)
+Refined_6C <- subset(Clean_IAA6...C, OD600 >= growth)
+Refined_7A <- subset(Clean_IAA7...A, OD600 >= growth)
+Refined_7B <- subset(Clean_IAA7...B, OD600 >= growth)
+Refined_9A <- subset(Clean_IAA9...A, OD600 >= growth)
+Refined_9B <- subset(Clean_IAA9...B, OD600 >= growth)
+Refined_10A <- subset(Clean_IAA10...A, OD600 >= growth)
+Refined_10B <- subset(Clean_IAA10...B, OD600 >= growth)
+Refined_12A <- subset(Clean_IAA12...A, OD600 >= growth)
+Refined_12B <- subset(Clean_IAA12...B, OD600 >= growth)
+Refined_14A <- subset(Clean_IAA14...A, OD600 >= growth)
+Refined_14B <- subset(Clean_IAA14...B, OD600 >= growth)
+Refined_15A <- subset(Clean_IAA15...A, OD600 >= growth)
+Refined_15B <- subset(Clean_IAA15...B, OD600 >= growth)
+Refined_17A <- subset(Clean_IAA17...A, OD600 >= growth)
+Refined_17B <- subset(Clean_IAA17...B, OD600 >= growth)
+Refined_26A <- subset(Clean_IAA26...A, OD600 >= growth)
+Refined_26B <- subset(Clean_IAA26...B, OD600 >= growth)
+Refined_30A <- subset(Clean_IAA30...A, OD600 >= growth)
+Refined_30B <- subset(Clean_IAA30...B, OD600 >= growth)
+Refined_33A <- subset(Clean_IAA33...A, OD600 >= growth)
+Refined_33B <- subset(Clean_IAA33...B, OD600 >= growth)
+Refined_34A <- subset(Clean_IAA34...A, OD600 >= growth)
+Refined_34B <- subset(Clean_IAA34...B, OD600 >= growth)
+
+```
